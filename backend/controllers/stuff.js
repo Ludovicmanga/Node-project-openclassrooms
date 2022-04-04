@@ -14,7 +14,7 @@ exports.getAllThings = (req, res, next) => {
     Thing.find()
         .then(things => res.status(200).json(things))
         .catch(error => res.status(400).json({ error }))
-  }
+}
 
 exports.getOneThing = (req, res, next) => {
     Thing.findOne({_id: req.params.id})
@@ -23,13 +23,26 @@ exports.getOneThing = (req, res, next) => {
 }
 
 exports.deleteOneThing = (req, res, next) => {
-    Thing.deleteOne({_id: req.params.id})
-        .then(() => res.status(202))
-        .catch(error => res.status(400).json({ error }))
+    Thing.findOne({_id: req.params.id})
+        .then(thing => {
+            if(!thing) {
+                return res.status(404).json({
+                    error: new Error('Objet non trouvé')
+                })
+            }
+            if(thing.userId !== req.auth.userId){
+                return res.status(400).json({
+                    error: new Error('Requête non autorisée')
+                })
+            }
+            Thing.deleteOne({_id: req.params.id})
+                .then(() => res.status(202))
+                .catch(error => res.status(400).json({ error }))
+        })
 }
 
 exports.modifiyOneThing = (req, res, next) => {
     Thing.updateOne({_id: req.params.id}, {...req.body, _id: req.params.id })
-        .then(() => res.status(204).json({message: 'Objet modifié !!'}))
+        .then(() => res.status(204).json({message : "hey"}))
         .catch(error => res.status(400).json({ error }))
 }
