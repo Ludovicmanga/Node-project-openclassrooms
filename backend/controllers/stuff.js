@@ -1,4 +1,5 @@
 const Thing = require('../models/Thing');
+const fs = require('fs');
 
 exports.createThing = (req, res, next) => {
     const ThingObject = JSON.parse(req.body.thing);
@@ -37,9 +38,12 @@ exports.deleteOneThing = (req, res, next) => {
                     error: new Error('Requête non autorisée')
                 })
             }
-            Thing.deleteOne({_id: req.params.id})
-                .then(() => res.status(202))
+            const filename = thing.imageUrl.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Thing.deleteOne({_id: req.params.id})
+                .then(() => res.status(202).json({ message: 'Objet supprimé !'}))
                 .catch(error => res.status(400).json({ error }))
+            })
         })
 }
 
